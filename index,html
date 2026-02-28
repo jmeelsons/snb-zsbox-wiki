@@ -451,8 +451,6 @@
             <hr>
             <p>Это вики находится в разработке. Используйте навигацию сверху для переключения между страницами.</p>
             <div class="important-block" style="background-color: #1a0000; border-left: 5px solid red; padding: 12px 18px; margin: 20px 0;">
-                <span style="color: red;">➤</span> Основной шрифт: Bahnschrift (черно-красный стиль).<br>
-                <span style="color: red;">➤</span> Все страницы собраны вручную на основе твоего текстового файла.
             </div>
         </div>
 
@@ -511,8 +509,7 @@
 
         <!-- ФУТЕР -->
         <div class="wiki-footer">
-            <p>Черно-красная вики • Текст из SNB.WIKI</p>
-            <p>Шрифт Bahnschrift • Анимированный фон • WIP</p>
+            <p>SNB-RU Server | Copyright все права защищены | 2025/2026</p>
         </div>
     </div>
 
