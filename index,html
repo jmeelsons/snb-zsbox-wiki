@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNB.WIKI — анимированная</title>
+    <style>
+        /* === ОСНОВНЫЕ НАСТРОЙКИ === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Bahnschrift', 'Bahnschrift SemiBold', 'Segoe UI', sans-serif;
+            background-color: black;
+            color: #ffcccc;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ИНТЕРАКТИВНЫЙ ФОН С ЧАСТИЦАМИ */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none; /* чтобы клики проходили сквозь canvas к кнопкам */
+        }
+
+        /* Дополнительный анимированный градиентный фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
+                        repeating-linear-gradient(45deg, rgba(255,0,0,0.02) 0px, rgba(255,0,0,0.02) 2px, transparent 2px, transparent 8px);
+            z-index: 0;
+            animation: gradientPulse 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes gradientPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Контейнер (поверх фона) */
+        .wiki-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            width: 100%;
+            background-color: rgba(10, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            border: 2px solid red;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+            animation: containerGlow 3s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes containerGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.5); border-color: red; }
+            50% { box-shadow: 0 0 50px rgba(255, 0, 0, 0.8), 0 0 20px red; border-color: #ff4d4d; }
+        }
+
+        /* Заголовки с анимацией */
+        h1 {
+            font-size: 2.6rem;
+            text-align: center;
+            border-bottom: 3px solid red;
+            margin-bottom: 20px;
+            word-break: break-word;
+            animation: titleFlicker 4s infinite;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        @keyframes titleFlicker {
+            0%, 100% { text-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+            33% { text-shadow: 0 0 20px red, 0 0 30px rgba(255, 0, 0, 0.8); }
+            66% { text-shadow: 0 0 5px rgba(255, 0, 0, 0.3); }
+        }
+
+        h2, h3 {
+            color: red;
+            border-bottom: 2px solid red;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h2::after, h3::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, red, transparent);
+            animation: slideLine 3s infinite;
+        }
+
+        @keyframes slideLine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        /* Кнопки навигации с анимацией */
+        .page-navigation {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #330000;
+            padding-bottom: 10px;
+        }
+
+        .page-btn {
+            background-color: #1a0000;
+            color: #ff8080;
+            border: 1px solid #4d0000;
+            padding: 10px 18px;
+            font-family: 'Bahnschrift', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-bottom: none;
+            margin-right: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 0, 0, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .page-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .page-btn:hover {
+            background-color: #330000;
+            color: white;
+            border-color: red;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .page-btn.active {
+            background-color: black;
+            color: red;
+            border: 1px solid red;
+            border-bottom: 2px solid black;
+            transform: translateY(2px);
+            animation: activePulse 2s infinite;
+        }
+
+        @keyframes activePulse {
+            0%, 100% { box-shadow: 0 0 10px red; }
+            50% { box-shadow: 0 0 20px red, 0 0 30px rgba(255, 0, 0, 0.5); }
+        }
+
+        /* Страницы с анимацией появления */
+        .page {
+            display: none;
+            background-color: rgba(5, 0, 0, 0.7);
+            backdrop-filter: blur(2px);
+            padding: 20px;
+            border-radius: 0 8px 8px 8px;
+            border: 1px solid #330000;
+            border-top: 2px solid red;
+            animation: pageFadeIn 0.5s ease-out;
+        }
+
+        .page.active-page {
+            display: block;
+        }
+
+        @keyframes pageFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Анимированные списки */
+        .rules-list > li {
+            margin-bottom: 15px;
+            padding-left: 35px;
+            position: relative;
+            border-left: 3px solid #330000;
+            padding: 8px 0 8px 40px;
+            transition: all 0.3s;
+            animation: slideIn 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .rules-list > li:nth-child(1) { animation-delay: 0.1s; }
+        .rules-list > li:nth-child(2) { animation-delay: 0.2s; }
+        .rules-list > li:nth-child(3) { animation-delay: 0.3s; }
+        .rules-list > li:nth-child(4) { animation-delay: 0.4s; }
+        .rules-list > li:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .rules-list > li:hover {
+            border-left-color: red;
+            background: linear-gradient(90deg, rgba(255,0,0,0.1), transparent);
+            transform: translateX(5px);
+        }
+
+        .rules-list > li::before {
+            content: counter(rule-counter) ".";
+            position: absolute;
+            left: 5px;
+            color: red;
+            font-weight: bold;
+            font-size: 1.2rem;
+            animation: numberPulse 2s infinite;
+        }
+
+        @keyframes numberPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); color: #ff4d4d; }
+        }
+
+        /* Блок с консолью (анимированный) */
+        .console-code {
+            background-color: #1a0000;
+            border: 1px solid red;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            color: #ff6666;
+            border-radius: 5px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+            animation: consoleGlitch 4s infinite;
+        }
+
+        .console-code::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent,
+                transparent,
+                transparent,
+                rgba(255, 0, 0, 0.1)
+            );
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(0deg) translateY(-100%); }
+            100% { transform: rotate(20deg) translateY(100%); }
+        }
+
+        @keyframes consoleGlitch {
+            0%, 100% { box-shadow: 0 0 5px red; }
+            92% { transform: skew(0deg); }
+            93% { transform: skew(5deg); }
+            94% { transform: skew(-5deg); }
+            95% { transform: skew(0deg); }
+        }
+
+        /* WIP блок с анимацией */
+        .wip {
+            background-color: #330000;
+            color: #ff9999;
+            text-align: center;
+            padding: 30px;
+            border: 2px dashed red;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-top: 25px;
+            animation: wipPulse 1.5s infinite, wipRotate 10s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wip::before {
+            content: '⚠️';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            animation: spin 4s linear infinite;
+        }
+
+        .wip::after {
+            content: '⚠️';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            animation: spin 4s linear infinite reverse;
+        }
+
+        @keyframes wipPulse {
+            0%, 100% { transform: scale(1); background-color: #330000; }
+            50% { transform: scale(1.02); background-color: #4d0000; }
+        }
+
+        @keyframes wipRotate {
+            0%, 100% { border-color: red; }
+            50% { border-color: #ff4d4d; }
+        }
+
+        @keyframes spin {
+            from { transform: translateY(-50%) rotate(0deg); }
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        /* Анимированный футер */
+        .wiki-footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #993333;
+            border-top: 1px dashed red;
+            padding-top: 15px;
+            animation: footerFade 5s infinite;
+        }
+
+        @keyframes footerFade {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* Ссылки с анимацией */
+        a {
+            color: #ff4d4d;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px dotted #660000;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        a:hover {
+            color: white;
+            border-bottom: 1px solid red;
+            text-shadow: 0 0 8px red;
+        }
+
+        a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: red;
+            transition: width 0.3s;
+        }
+
+        a:hover::after {
+            width: 100%;
+        }
+
+        /* Кнопки навигации под фоном? нет, они выше */
+        .page-btn, .wiki-container {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Адаптация */
+        @media (max-width: 600px) {
+            .wiki-container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Холст для частиц (интерактивный фон) -->
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="wiki-container">
+        <!-- ШАПКА -->
+        <h1>SNB.WIKI</h1>
+        <p style="text-align: center; margin-bottom: 15px; color: #ff6666; animation: fadeInOut 4s infinite;">Добро пожаловать. Здесь можно узнать о сервере и его правилах.</p>
+
+        <!-- КНОПКИ СТРАНИЦ -->
+        <div class="page-navigation">
+            <button class="page-btn active" onclick="switchPage('welcome')">Главная</button>
+            <button class="page-btn" onclick="switchPage('rules')">Правила</button>
+            <button class="page-btn" onclick="switchPage('gameplay')">Геймплей</button>
+        </div>
+
+        <!-- СТРАНИЦЫ -->
+        <!-- Главная -->
+        <div id="welcome" class="page active-page">
+            <h2>Добро пожаловать на SNB.WIKI</h2>
+            <p style="font-size: 1.2rem;">Здесь вы можете узнать больше о сервере и его правилах.</p>
+            <hr>
+            <p>Это вики находится в разработке. Используйте навигацию сверху для переключения между страницами.</p>
+            <div class="important-block" style="background-color: #1a0000; border-left: 5px solid red; padding: 12px 18px; margin: 20px 0;">
+                <span style="color: red;">➤</span> Основной шрифт: Bahnschrift (черно-красный стиль).<br>
+                <span style="color: red;">➤</span> Все страницы собраны вручную на основе твоего текстового файла.
+            </div>
+        </div>
+
+        <!-- Правила -->
+        <div id="rules" class="page">
+            <h2>Правила сервера</h2>
+            <p style="color: #ff9999;"><em>Незнание правил — не оправдание.</em></p>
+
+            <h3 style="margin-top: 25px;">I. Правила в игре</h3>
+            <ul class="rules-list">
+                <li>Использование читов (сторонних программ, позволяющих получить преимущество над другими игроками) карается <span class="highlight-red">постоянным баном</span>.</li>
+                <li>NSFW, NSFL, нацистские спреи караются <span class="highlight-red">постоянным запретом</span>.</li>
+                <li>Если вы обнаружите ошибку, пожалуйста, сообщите об этом в специальном канале Discord. Если вы не хотите, чтобы его увидели, вы можете создать заявку. Если вы намеренно используете баг или не видите его, вас могут временно (<span class="highlight-red">1-7 дней</span>) забанить на сервере.</li>
+                <li>Метагейминг запрещён и может быть наказан временным (<span class="highlight-red">3-7 дней</span>) баном.</li>
+                <li>Не будь грубым, относись к остальным игрокам с уважением. Если зайдёшь слишком далеко, тебя могут временно (<span class="highlight-red">3-14 дней</span>) заглушить.</li>
+            </ul>
+
+            <h3>II. Правила чата в игре</h3>
+            <ul class="rules-list" style="counter-reset: rule-counter 5;">
+                <li>Подстрекательство к межэтническим конфликтам в чате или голосовом чате карается (<span class="highlight-red">3 дня / навсегда</span>) отключением микрофона или мутом.</li>
+            </ul>
+            <p style="margin-left: 40px; font-weight: bold;">Включая:</p>
+            <ul class="sub-list" style="margin-left: 60px;">
+                <li>Нацистские заявления.</li>
+                <li>Жёсткие н-слова.</li>
+                <li>Любые другие оскорбления, основанные на национальных особенностях.</li>
+            </ul>
+            <p style="margin-top: 15px;">Это игровой сервер, здесь не обсуждайте политику, и если вы подстрекнете других к этому, ваши сообщения могут быть заблокированы (<span class="highlight-red">1-7 дней</span>) на сервере.</p>
+            <p style="margin-top: 10px;">Похвала известных террористов или террористических актов приведёт к <span class="highlight-red">постоянному запрету</span>.</p>
+        </div>
+
+        <!-- Геймплей -->
+        <div id="gameplay" class="page">
+            <h2>Геймплей</h2>
+            <h3>1. Ragdoll</h3>
+            <p>Система регдола даёт возможность управлять своим персонажем, когда он находится в состоянии регдола.</p>
+            <p>Вы можете упасть в регдол из-за полученного урона, сильного физического столкновения или если вы нажмёте специальную кнопку.</p>
+
+            <div class="console-code">
+                <strong>Консольная команда:</strong> <span style="color: white;">fake</span><br>
+                <strong>Привязка к кнопке:</strong> bind ваша_кнопка fake<br>
+                <em style="color: #ffb3b3;">Пример:</em> bind t fake
+            </div>
+
+            <p><span class="highlight-red">Открыть консоль можно на клавише: <strong>Ё</strong></span></p>
+
+            <hr>
+
+            <div class="wip">
+                ⚠️ WIP ⚠️<br>
+                <span style="font-size: 1rem;">Всё еще в разработке</span>
+            </div>
+
+            <p style="margin-top: 15px; color: #993333; text-align: right;">— Добавлено: "Напиши дальше что все еще в разработке. WIP"</p>
+        </div>
+
+        <!-- ФУТЕР -->
+        <div class="wiki-footer">
+            <p>Черно-красная вики • Текст из SNB.WIKI</p>
+            <p>Шрифт Bahnschrift • Анимированный фон • WIP</p>
+        </div>
+    </div>
+
+    <script>
+        // === ИНТЕРАКТИВНЫЙ ФОН С ЧАСТИЦАМИ ===
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouseX = 0, mouseY = 0;
+        let mouseActive = false;
+
+        // Настройка размера canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Создание частиц
+        function createParticles(count) {
+            particles = [];
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 3 + 1,
+                    baseSize: Math.random() * 3 + 1,
+                    opacity: Math.random() * 0.5 + 0.2,
+                    color: `rgba(255, ${Math.floor(Math.random() * 100 + 50)}, ${Math.floor(Math.random() * 50)}, `
+                });
+            }
+        }
+        createParticles(100);
+
+        // Отслеживание мыши
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            mouseActive = true;
+        });
+
+        document.addEventListener('mouseleave', () => {
+            mouseActive = false;
+        });
+
+        // Анимация частиц
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(p => {
+                // Движение
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Границы
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                // Влияние мыши
+                if (mouseActive) {
+                    const dx = mouseX - p.x;
+                    const dy = mouseY - p.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 150) {
+                        // Отталкивание от мыши
+                        const angle = Math.atan2(dy, dx);
+                        const force = (150 - distance) / 150 * 0.5;
+                        p.vx -= Math.cos(angle) * force;
+                        p.vy -= Math.sin(angle) * force;
+                        
+                        // Изменение размера рядом с мышью
+                        p.size = p.baseSize * (1 + (150 - distance) / 150);
+                    } else {
+                        p.size = p.baseSize;
+                    }
+                } else {
+                    p.size = p.baseSize;
+                }
+
+                // Ограничение скорости
+                const maxSpeed = 2;
+                if (Math.abs(p.vx) > maxSpeed) p.vx = Math.sign(p.vx) * maxSpeed;
+                if (Math.abs(p.vy) > maxSpeed) p.vy = Math.sign(p.vy) * maxSpeed;
+
+                // Рисование частицы
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                
+                // Красный градиент
+                const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
+                gradient.addColorStop(0, `rgba(255, 50, 50, ${p.opacity})`);
+                gradient.addColorStop(1, `rgba(255, 0, 0, 0)`);
+                
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Связи между частицами
+                particles.forEach(p2 => {
+                    if (p === p2) return;
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 0, 0, ${0.1 * (1 - distance / 100)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                });
+            });
+
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // === ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ ===
+        function switchPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active-page');
+            });
+
+            const buttons = document.querySelectorAll('.page-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const activePage = document.getElementById(pageId);
+            if (activePage) {
+                activePage.classList.add('active-page');
+            }
+
+            buttons.forEach(btn => {
+                if ( (pageId === 'welcome' && btn.textContent.includes('Главная')) ||
+                     (pageId === 'rules' && btn.textContent.includes('Правила')) ||
+                     (pageId === 'gameplay' && btn.textContent.includes('Геймплей')) ) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        window.onload = function() {
+            switchPage('welcome');
+        };
+    </script>
+</body>
+</html>
